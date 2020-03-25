@@ -1,0 +1,97 @@
+<%= stylesheet_link_tag '//cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css' %>
+<%= javascript_include_tag '//cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js' %> 
+
+<% custom_field_values = @issue.editable_custom_field_values %>
+<% custom_field_values_full_width = custom_field_values.select { |value| value.custom_field.full_width_layout? } %>
+<% custom_field_values -= custom_field_values_full_width %>
+
+<% if custom_field_values.present? %>
+<div class="splitcontent">
+<div class="splitcontentleft">
+<% i = 0 %>
+<% split_on = (custom_field_values.size / 2.0).ceil - 1 %>
+<% custom_field_values.each do |value| %>
+  <% if value.custom_field_id != 12 -%>
+    <p><%= custom_field_tag_with_label :issue, value, :required => @issue.required_attribute?(value.custom_field_id) %></p>
+  <% else %>
+    <p>
+      <label for="issue_custom_field_values_12"><span>Причина обращения</span> <span class="required">*</span></label>
+      <input list="appeal_reason" type="text" name="issue[custom_field_values][12]" id="issue_custom_field_values_12" value="<%=value.value%>" class="string_cf">
+      <datalist id="appeal_reason">
+        <option value="ТМК">
+        <option value="Уточняющий вопрос по профилактике и лечению">
+        <option value="Обращения граждан">
+        <option value="Проблемные вопросы">
+    </datalist>
+    </p>
+  <% end -%>
+<% if i == split_on -%>
+</div><div class="splitcontentright">
+<% end -%>
+<% i += 1 -%>
+<% end -%>
+</div>
+</div>
+<% end %>
+
+<% custom_field_values_full_width.each do |value| %>
+  <p><%= custom_field_tag_with_label :issue, value, :required => @issue.required_attribute?(value.custom_field_id) %></p>
+<% end %>
+
+<%= javascript_tag do %>
+$(document).ready(function(){
+  $('#issue_custom_field_values_9').select2({
+    width: "95%",
+    language: {
+      errorLoading: function () {
+          return 'Результат не может быть загружен.';
+      },
+      inputTooLong: function (args) {
+          var overChars = args.input.length - args.maximum;
+          var message = 'Пожалуйста, удалите ' + overChars + ' символ';
+          if (overChars >= 2 && overChars <= 4) {
+              message += 'а';
+          } else if (overChars >= 5) {
+              message += 'ов';
+          }
+          return message;
+      },
+      inputTooShort: function (args) {
+          var remainingChars = args.minimum - args.input.length;
+
+          var message = 'Пожалуйста, введите ' + remainingChars + ' или более символов';
+
+          return message;
+      },
+      loadingMore: function () {
+          return 'Загружаем ещё ресурсы…';
+      },
+      maximumSelected: function (args) {
+          var message = 'Вы можете выбрать ' + args.maximum + ' элемент';
+
+          if (args.maximum  >= 2 && args.maximum <= 4) {
+              message += 'а';
+          } else if (args.maximum >= 5) {
+              message += 'ов';
+          }
+
+          return message;
+      },
+      noResults: function () {
+        return 'Ничего не найдено';
+      },
+      searching: function () {
+        return 'Поиск…';
+      }
+    }
+  });
+
+  $('.select2').find('.select2-selection').one('focus', select2Focus).on('blur', function () {
+    $(this).one('focus', select2Focus)
+  })
+
+  function select2Focus() {
+      $(this).closest('.select2').prev('select').select2('open');
+  } 
+});
+<% end %>

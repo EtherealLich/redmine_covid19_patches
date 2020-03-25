@@ -1,0 +1,11 @@
+<%= labelled_fields_for :issue, @issue do |f| %>
+
+<div class="splitcontent">
+
+<% if @issue.safe_attribute? 'custom_field_values' %>
+<%= render :partial => 'issues/form_custom_fields' %>
+<% end %>
+
+<% end %>
+
+<% include_calendar_headers_tags %>
